@@ -8,6 +8,7 @@ module.exports = [
     ignores: [
       'webpack.config.js',
       'eslint.config.js',
+      'playwright.config.js',
       '.eslintrc.js',
       'node_modules/**',
       'dist/**'
@@ -15,7 +16,7 @@ module.exports = [
   },
   js.configs.recommended,
   {
-    files: ['*.js'],
+    files: ['*.js', 'e2e-tests/**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2018,
       sourceType: 'commonjs',
