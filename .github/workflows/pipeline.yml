@@ -20,6 +20,8 @@ jobs:
         run: npm install
       - name: Check style
         run: npm run eslint
+      - name: Force an error
+        run: exit 1
       - name: Run npm test
         run: npm run test
       - name: Run npm build
