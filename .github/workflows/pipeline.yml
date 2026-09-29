@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - chapter6
   pull_request:
     branches: [main]
     types: [opened, synchronize]
@@ -38,18 +37,8 @@ jobs:
       - name: Trigger deployment
         if: ${{ github.event_name == 'push' && ! contains(join(toJson(github.event.commits.*.message)), '#skip') }}
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
-  tag_release_and_notification:
-    needs: [simple_deployment_pipeline]
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && ! contains(join(toJson(github.event.commits.*.message)), '#skip') }}
-    steps:
-      - uses: actions/checkout@v6
-      - name: Bump version and push tag
-        uses: anothrNick/github-tag-action@1.75.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEFAULT_BUMP: patch
       - name: Send Discord notification
+        if: ${{ github.event_name == 'push' && ! contains(join(toJson(github.event.commits.*.message)), '#skip') }}
         uses: sarisia/actions-status-discord@v1.16.0
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
@@ -62,12 +51,24 @@ jobs:
             **Author:** ${{ github.event.head_commit.author.name }}
           color: 0x0000ff
           url: ${{ github.event.head_commit.url }}
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && ! contains(join(toJson(github.event.commits.*.message)), '#skip') }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.75.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
   notify_failure:
     needs: [simple_deployment_pipeline]
     if: ${{ failure() }}
     runs-on: ubuntu-latest
     steps:
-      - name: Send Discord notification
+      - name: Send Discord notification (push)
+        if: ${{ github.event_name == 'push')
         uses: sarisia/actions-status-discord@v1.16.0
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
@@ -84,5 +85,24 @@ jobs:
             **Job:** ${{ github.job }}
 
             [View Commit](${{ github.event.head_commit.url }})
+            [View Workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          color: 0xf44336
+      - name: Send Discord notification (pull request)
+        if: ${{ github.event_name == 'pull_request')
+        uses: sarisia/actions-status-discord@v1.16.0
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          content: "❌ Build Failed! The pipeline encountered an error"
+          title: "Failure Details"
+          description: |
+            **Repository:** ${{ github.repository }}
+            **Branch:** ${{ github.head_ref }}
+            **Commit:** ${{ github.event.after}}
+            **Message:** ${{ github.event.head_commit.message }}
+            **Author:** ${{ github.actor }}
+            **Workflow:** ${{ github.workflow }}
+            **Job:** ${{ github.job }}
+
+            [View Commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.after }})
             [View Workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
           color: 0xf44336
