@@ -16,12 +16,6 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
-      - name: github context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: Force an error
-        run: exit 1
       - name: Install dependencies
         run: npm install
       - name: Check style
@@ -37,7 +31,7 @@ jobs:
       - name: Trigger deployment
         if: ${{ github.event_name == 'push' && ! contains(join(toJson(github.event.commits.*.message)), '#skip') }}
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
-      - name: Send Discord notification
+      - name: Send Discord success notification
         if: ${{ github.event_name == 'push' && ! contains(join(toJson(github.event.commits.*.message)), '#skip') }}
         uses: sarisia/actions-status-discord@v1.16.0
         with:
@@ -48,7 +42,7 @@ jobs:
           description: |
             **Commit:** ${{ github.event.head_commit.id }}
             **Message:** ${{ github.event.head_commit.message }}
-            **Author:** ${{ github.event.head_commit.author.name }}
+            **Author:** ${{ github.actor }}
           color: 0x0000ff
           url: ${{ github.event.head_commit.url }}
   tag_release:
@@ -67,7 +61,7 @@ jobs:
     if: ${{ failure() }}
     runs-on: ubuntu-latest
     steps:
-      - name: Send Discord notification (push)
+      - name: Send Discord error notification (push)
         if: ${{ github.event_name == 'push' }}
         uses: sarisia/actions-status-discord@v1.16.0
         with:
@@ -87,7 +81,7 @@ jobs:
             [View Commit](${{ github.event.head_commit.url }})
             [View Workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
           color: 0xf44336
-      - name: Send Discord notification (pull request)
+      - name: Send Discord error notification (pull request)
         if: ${{ github.event_name == 'pull_request' }}
         uses: sarisia/actions-status-discord@v1.16.0
         with:
@@ -98,7 +92,6 @@ jobs:
             **Repository:** ${{ github.repository }}
             **Branch:** ${{ github.head_ref }}
             **Commit:** ${{ github.event.after}}
-            **Message:** ${{ github.event.head_commit.message }}
             **Author:** ${{ github.actor }}
             **Workflow:** ${{ github.workflow }}
             **Job:** ${{ github.job }}
