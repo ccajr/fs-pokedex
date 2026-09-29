@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - chapter6
   pull_request:
     branches: [main]
     types: [opened, synchronize]
@@ -62,7 +63,7 @@ jobs:
           color: 0x0000ff
           url: ${{ github.event.head_commit.url }}
   notify_failure:
-    needs: [simple_deployment_pipeline, tag_release_and_notification]
+    needs: [simple_deployment_pipeline]
     if: ${{ failure() }}
     runs-on: ubuntu-latest
     steps:
