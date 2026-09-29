@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Discord notification (push)
-        if: ${{ github.event_name == 'push')
+        if: ${{ github.event_name == 'push' }}
         uses: sarisia/actions-status-discord@v1.16.0
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
@@ -88,7 +88,7 @@ jobs:
             [View Workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
           color: 0xf44336
       - name: Send Discord notification (pull request)
-        if: ${{ github.event_name == 'pull_request')
+        if: ${{ github.event_name == 'pull_request' }}
         uses: sarisia/actions-status-discord@v1.16.0
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
