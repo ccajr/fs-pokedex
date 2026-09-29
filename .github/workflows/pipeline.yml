@@ -16,16 +16,16 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
-      - name: Install dependencies
-        run: npm install
-      - name: Check style
-        run: npm run eslint
       - name: github context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
       - name: Force an error
         run: exit 1
+      - name: Install dependencies
+        run: npm install
+      - name: Check style
+        run: npm run eslint
       - name: Run npm test
         run: npm run test
       - name: Run npm build
