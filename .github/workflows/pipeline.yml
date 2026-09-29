@@ -43,7 +43,7 @@ jobs:
             **Commit:** ${{ github.event.head_commit.id }}
             **Message:** ${{ github.event.head_commit.message }}
             **Author:** ${{ github.actor }}
-          color: 0x0000ff
+          color: 0x70a750
           url: ${{ github.event.head_commit.url }}
   tag_release:
     needs: [simple_deployment_pipeline]
