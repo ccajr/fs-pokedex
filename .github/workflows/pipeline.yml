@@ -9,7 +9,7 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  simple_deployment_pipeline:
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -28,9 +28,17 @@ jobs:
         run: npx playwright install --with-deps
       - name: Run Playwright tests
         run: npm run test:e2e
+  deploy:
+    needs: [build_and_test]
+    runs-on: ubuntu-latest
+    steps:
       - name: Trigger deployment
         if: ${{ github.event_name == 'push' && ! contains(join(toJson(github.event.commits.*.message)), '#skip') }}
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+  notify_success:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    steps:
       - name: Send Discord success notification
         if: ${{ github.event_name == 'push' && ! contains(join(toJson(github.event.commits.*.message)), '#skip') }}
         uses: sarisia/actions-status-discord@v1.16.0
@@ -46,7 +54,7 @@ jobs:
           color: 0x70a750
           url: ${{ github.event.head_commit.url }}
   tag_release:
-    needs: [simple_deployment_pipeline]
+    needs: [deploy]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && ! contains(join(toJson(github.event.commits.*.message)), '#skip') }}
     steps:
@@ -57,7 +65,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
   notify_failure:
-    needs: [simple_deployment_pipeline]
+    needs: [deploy]
     if: ${{ failure() }}
     runs-on: ubuntu-latest
     steps:
