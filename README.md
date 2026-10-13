@@ -12,5 +12,8 @@ Start by running `npm install` inside the project folder
 `npm run build` to make a production build
 `npm run start-prod` to run your production build
 
-## Deployed App
+## Deployed Pokedex App
 https://fs-pokedex-ktk2.onrender.com
+
+## Exercise 21 & 22 App Repository
+https://github.com/ccajr/fso-cicd
